@@ -1,15 +1,10 @@
 import './App.css'
-import styled from 'styled-components'
 import Composer from './components/Composer.jsx'
 import History from './components/History.jsx'
 import Lightbox from './components/Lightbox.jsx'
 import ModelLoader from './components/ModelLoader.jsx'
 import { TAGLINES } from './constants/taglines.js'
 import { useImageWorkbench } from './hooks/useImageWorkbench.js'
-
-const StyledWrapper = styled.div`
-  display: contents;
-`
 
 function App() {
   const {
@@ -24,8 +19,10 @@ function App() {
   const { fileInputRef, composerRef, historyRef } = refs
 
   return (
-    <StyledWrapper>
-      <header><span>ly.sunal.in</span></header>
+    <>
+      <header className='app-header'>
+        <span className='brand-pill'>ly.sunal.in</span>
+      </header>
       <section className='main'>
         <Composer
           state={state}
@@ -52,7 +49,7 @@ function App() {
         selectors={selectors}
         actions={actions}
       />
-    </StyledWrapper>
+    </>
   )
 }
 

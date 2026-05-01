@@ -1,21 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import compact from 'lodash/compact'
-import keyBy from 'lodash/keyBy'
 import { TAGLINES } from '../constants/taglines.js'
-import { planOperations } from '../llm/intentParser.js'
-import { getStatus, subscribe, waitForReady, disposeModel } from '../llm/llmClient.js'
-import { runOperation, getOperation, NOOP } from '../operations/index.js'
+import { getOperation, NOOP } from '../operations/index.js'
+import { subscribe } from '../llm/llmClient.js'
 import {
   OP_MODE_AUTO,
   advanceTagline,
   appendBatch,
   appendStaged,
-  applyOperationPlan,
   cancelEdit as cancelEditState,
   clearComposerAfterSubmit,
-  patchBatch as patchBatchState,
-  patchItem as patchItemState,
   removeStaged as removeStagedState,
   replaceBatch,
   setDragging,
@@ -25,12 +20,16 @@ import {
   setText,
   startEditingBatch,
 } from '../store/appSlice.js'
+import { store } from '../store/store.js'
 import { fileMetadata, newBatchId, newStagedId } from '../utils/imageMetadata.js'
 import { useAssetRegistry } from './useAssetRegistry.js'
+import { useBatchProcessor } from './useBatchProcessor.js'
+
+const MAX_STAGED = 50
 
 export function useImageWorkbench() {
   const dispatch = useDispatch()
-  const state = useSelector((store) => store.app)
+  const state = useSelector((state) => state.app)
   const {
     text,
     staged,
@@ -47,13 +46,22 @@ export function useImageWorkbench() {
   const composerRef = useRef(null)
   const historyRef = useRef(null)
   const prevBatchCount = useRef(0)
-  const batchesByIdRef = useRef({})
-  const processingChain = useRef(Promise.resolve())
+  const downloadingRef = useRef(false)
   const assets = useAssetRegistry()
-  const batchesById = useMemo(() => keyBy(batches, 'id'), [batches])
+  const { buildItems, enqueueBatch, patchBatch } = useBatchProcessor({ assets, dispatch })
 
-  useEffect(() => { batchesByIdRef.current = batchesById }, [batchesById])
-  useEffect(() => subscribe(() => forceRerender((n) => n + 1)), [])
+  const scrollHistoryIntoView = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        historyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    })
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = subscribe(() => forceRerender((n) => n + 1))
+    return unsubscribe
+  }, [])
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -65,11 +73,37 @@ export function useImageWorkbench() {
   useEffect(() => {
     if (!lightboxImg) return
     const onKey = (e) => {
-      if (e.key === 'Escape') dispatch(setLightboxImg(null))
+      if (e.key === 'Escape') {
+        dispatch(setLightboxImg(null))
+        return
+      }
+
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      e.preventDefault()
+
+      const allItems = batches.flatMap((batch) =>
+        batch.items.filter((item) => item.status !== 'pending' && item.status !== 'processing'),
+      )
+      const currentIdx = allItems.findIndex((item) => item.id === lightboxImg.itemId)
+      if (currentIdx === -1 || allItems.length === 0) return
+
+      const nextIdx =
+        e.key === 'ArrowLeft'
+          ? (currentIdx > 0 ? currentIdx - 1 : allItems.length - 1)
+          : (currentIdx < allItems.length - 1 ? currentIdx + 1 : 0)
+      const next = allItems[nextIdx]
+      if (!next) return
+
+      dispatch(
+        setLightboxImg({
+          itemId: next.id,
+          name: next.processedFilename || next.name,
+        }),
+      )
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [dispatch, lightboxImg])
+  }, [batches, dispatch, lightboxImg])
 
   useEffect(() => {
     const onPageShow = (e) => {
@@ -97,12 +131,10 @@ export function useImageWorkbench() {
 
   useEffect(() => {
     if (batches.length > prevBatchCount.current && historyRef.current) {
-      requestAnimationFrame(() => {
-        historyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
+      scrollHistoryIntoView()
     }
     prevBatchCount.current = batches.length
-  }, [batches.length])
+  }, [batches.length, scrollHistoryIntoView])
 
   const currentManualOp = opMode === OP_MODE_AUTO ? null : getOperation(opMode)
   const currentManualParams = (() => {
@@ -112,128 +144,33 @@ export function useImageWorkbench() {
     return { ...defaults, ...overrides }
   })()
 
-  const patchItem = (batchId, itemId, patch) => {
-    dispatch(patchItemState({ batchId, itemId, patch }))
-  }
-
-  const patchBatch = (batchId, patch) => {
-    dispatch(patchBatchState({ batchId, patch }))
-  }
-
   const addFiles = (fileList) => {
     const incoming = Array.from(fileList).filter((file) => file.type.startsWith('image/'))
     if (incoming.length === 0) return
-    const next = incoming.map((file) => {
+
+    const available = MAX_STAGED - staged.length
+    if (available <= 0) return
+
+    const existingNames = new Set(staged.map((item) => item.name))
+    const accepted = incoming.slice(0, available)
+    const next = accepted.map((file) => {
+      let name = file.name
+      if (existingNames.has(name)) {
+        const dot = name.lastIndexOf('.')
+        const base = dot === -1 ? name : name.slice(0, dot)
+        const ext = dot === -1 ? '' : name.slice(dot)
+        let counter = 2
+        while (existingNames.has(`${base} (${counter})${ext}`)) counter += 1
+        name = `${base} (${counter})${ext}`
+      }
+      existingNames.add(name)
+
       const id = newStagedId(file)
       assets.registerFileAsset(id, file)
-      return fileMetadata(id, file)
+      return { ...fileMetadata(id, file), name }
     })
+
     dispatch(appendStaged(next))
-  }
-
-  const buildItems = (stagedList) =>
-    stagedList.map((item) => ({
-      id: item.id,
-      name: item.name,
-      type: item.type,
-      size: item.size,
-      lastModified: item.lastModified,
-      status: 'pending',
-      opId: null,
-      params: {},
-      processedFilename: null,
-      error: null,
-      skippedReason: null,
-    }))
-
-  const processBatch = async (batch) => {
-    const batchId = batch.id
-    const mark = (label) => {
-      if (!import.meta.env.DEV) return
-      const mem = performance?.memory?.usedJSHeapSize
-      const memStr = mem ? ` heap=${(mem / 1048576).toFixed(0)}MB` : ''
-      console.log(`[batch ${batchId.slice(-5)}] ${label} t=${(performance.now() / 1000).toFixed(1)}s${memStr}`)
-    }
-
-    mark('start')
-
-    let ops
-    if (batch.forcedOpId && batch.forcedOpId !== OP_MODE_AUTO) {
-      const op = getOperation(batch.forcedOpId)
-      const defaults = op?.defaultParams ? op.defaultParams() : {}
-      const merged = { ...defaults, ...(batch.forcedParams || {}) }
-      const params = op?.normalizeParams ? op.normalizeParams(merged) : merged
-      ops = batch.items.map(() => ({ opId: batch.forcedOpId, params }))
-      mark(`manual op: ${batch.forcedOpId}`)
-    } else {
-      let useLLM = false
-      try {
-        await waitForReady()
-        useLLM = getStatus() === 'ready'
-        mark('llm ready')
-      } catch {
-        useLLM = false
-        mark('llm setup failed')
-      }
-
-      ops = await planOperations({
-        instruction: batch.prompt,
-        images: batch.items.map((item) => ({
-          file: assets.getAsset(item.id)?.file,
-          name: item.name,
-        })),
-        useLLM,
-      })
-      mark('plan done')
-
-      if (useLLM) {
-        disposeModel()
-        mark('llm disposed')
-      }
-    }
-
-    dispatch(applyOperationPlan({ batchId, ops, noop: NOOP }))
-
-    for (let i = 0; i < batch.items.length; i++) {
-      const item = batch.items[i]
-      const assignment = ops[i]
-      if (!assignment || assignment.opId === NOOP) continue
-
-      patchItem(batchId, item.id, { status: 'processing' })
-      mark(`op ${i} start: ${assignment.opId}`)
-      try {
-        const file = assets.getAsset(item.id)?.file
-        if (!file) throw new Error('Source image is no longer available')
-        const result = await runOperation(assignment.opId, file, assignment.params)
-        mark(`op ${i} done: ${assignment.opId}`)
-        assets.setProcessedAsset(item.id, result.blob)
-        patchItem(batchId, item.id, {
-          status: result.skippedReason ? 'skipped' : 'done',
-          processedFilename: result.filename,
-          opId: result.opId,
-          params: result.params,
-          skippedReason: result.skippedReason || null,
-          error: null,
-        })
-      } catch (err) {
-        console.error('[op] failed', { opId: assignment.opId, params: assignment.params, file: item.name }, err)
-        mark(`op ${i} FAILED: ${assignment.opId}`)
-        patchItem(batchId, item.id, {
-          status: 'error',
-          error: err?.message || 'Operation failed',
-        })
-      }
-    }
-
-    mark('batch done')
-    patchBatch(batchId, { status: 'done' })
-  }
-
-  const enqueueBatch = (batch) => {
-    processingChain.current = processingChain.current
-      .catch(() => {})
-      .then(() => processBatch(batch))
-    return processingChain.current
   }
 
   const submitNewBatch = () => {
@@ -309,7 +246,8 @@ export function useImageWorkbench() {
 
       if (editingBatchId) {
         const targetId = editingBatchId
-        const target = batchesByIdRef.current[targetId]
+        const freshBatches = store.getState().app.batches
+        const target = freshBatches.find((batch) => batch.id === targetId)
         if (!target) {
           submitNewBatch()
           return
@@ -326,6 +264,7 @@ export function useImageWorkbench() {
         }
         dispatch(replaceBatch(updatedBatch))
         dispatch(clearComposerAfterSubmit())
+        scrollHistoryIntoView()
         enqueueBatch(updatedBatch).catch((err) => {
           patchBatch(targetId, { status: 'done' })
           console.error('Edit failed', err)
@@ -382,8 +321,16 @@ export function useImageWorkbench() {
       setTimeout(() => URL.revokeObjectURL(url), 1000)
     },
     handleDownloadAll: (batch) => {
+      if (downloadingRef.current) return
+      downloadingRef.current = true
+
       batch.items.forEach((item, index) => {
-        setTimeout(() => actions.triggerDownload(item), index * 150)
+        setTimeout(() => {
+          actions.triggerDownload(item)
+          if (index === batch.items.length - 1) {
+            downloadingRef.current = false
+          }
+        }, index * 150)
       })
     },
     handleKeyDown: (e) => {

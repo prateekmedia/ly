@@ -1,31 +1,52 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
-  /* Theme: forest green */
-  --bg: #0e1410;
-  --bg-glow-strong: rgba(76, 175, 120, 0.15);
-  --bg-glow-soft: rgba(76, 175, 120, 0.08);
-
-  --text: #e8efe9;
-  --text-strong: #f1f5f2;
-  --text-muted: rgba(232, 239, 233, 0.55);
-  --text-faint: rgba(232, 239, 233, 0.35);
-
+  /* Final theme: Sage Garden */
+  --bg: #101510;
+  --text: #e6ece2;
+  --text-strong: #f4f8f0;
+  --text-muted: rgba(230, 236, 226, 0.56);
+  --text-faint: rgba(230, 236, 226, 0.32);
   --surface: rgba(255, 255, 255, 0.035);
-  --surface-strong: rgba(255, 255, 255, 0.06);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.1);
-
-  --accent: #7ee2a8;
-  --accent-strong: #4caf78;
-  --accent-bright: #8fe8b3;
-  --accent-glow: rgba(126, 226, 168, 0.5);
-  --accent-ring: rgba(126, 226, 168, 0.08);
-  --accent-ring-strong: rgba(126, 226, 168, 0.15);
-  --accent-edge: rgba(126, 226, 168, 0.35);
-  --accent-edge-drag: rgba(126, 226, 168, 0.6);
-
+  --surface-strong: rgba(255, 255, 255, 0.065);
+  --border: rgba(232, 248, 222, 0.09);
+  --border-strong: rgba(232, 248, 222, 0.15);
+  --accent: #a5d184;
+  --accent-strong: #7fad62;
+  --accent-bright: #c2eca0;
+  --accent-glow: rgba(165, 209, 132, 0.35);
+  --accent-ring: rgba(165, 209, 132, 0.08);
+  --accent-ring-strong: rgba(165, 209, 132, 0.16);
+  --accent-edge: rgba(165, 209, 132, 0.34);
+  --accent-edge-drag: rgba(165, 209, 132, 0.56);
   --tagline-base: #ffffff;
+  --radius-shell: 36px;
+  --radius-card: 24px;
+  --radius-control: 16px;
+  --radius-thumb: 26px;
+  --page-gap: 34px;
+  --page-pad-x: 24px;
+  --page-pad-y: 32px;
+  --composer-width: 700px;
+  --history-width: 820px;
+  --result-min: 168px;
+  --textarea-height: 150px;
+  --tagline-size: 30px;
+  --header-justify: center;
+  --composer-align: center;
+  --composer-justify: center;
+  --panel-blur: 20px;
+  --panel-shadow: 0 24px 70px -30px rgba(80, 120, 68, 0.5);
+  --panel-border-width: 1px;
+  --history-gap: 24px;
+  --control-case: none;
+  --brand-case: none;
+  --composer-pad: 24px 26px 20px;
+  --card-pad: 24px;
+  --preview-size: 56px;
+  --result-aspect: 1 / 1;
+  --history-page-align: stretch;
+  --history-page-pad-top: 56px;
 }
 
 *,
@@ -48,10 +69,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* subtle ambient glow */
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, var(--bg-glow-strong), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 50% 110%, var(--bg-glow-soft), transparent 60%);
+    radial-gradient(ellipse 45% 36% at 18% 18%, rgba(165, 209, 132, 0.11), transparent 64%),
+    radial-gradient(ellipse 52% 42% at 82% 90%, rgba(116, 157, 96, 0.1), transparent 60%);
   background-attachment: fixed;
 }
 
@@ -61,18 +81,21 @@ body {
   height: 100%;
 }
 
-header {
+.app-header {
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 3px;
   color: var(--text-muted);
   min-height: 56px;
   display: flex;
-  justify-content: center;
+  justify-content: var(--header-justify);
   align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  text-transform: var(--brand-case);
 }
 
-header > * {
+.brand-pill {
   padding: 10px 28px;
   line-height: 1;
   border: 1px solid var(--border);
@@ -104,17 +127,17 @@ section.main::-webkit-scrollbar-thumb {
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 28px;
-  padding: 32px 24px;
+  justify-content: var(--composer-justify);
+  align-items: var(--composer-align);
+  gap: var(--page-gap);
+  padding: var(--page-pad-y) var(--page-pad-x);
 }
 
 .history-page {
   animation: page-in 500ms ease both;
-  align-items: stretch;
+  align-items: var(--history-page-align);
   justify-content: flex-start;
-  padding-top: 56px;
+  padding-top: var(--history-page-pad-top);
   padding-bottom: 56px;
 }
 
@@ -131,7 +154,7 @@ section.main::-webkit-scrollbar-thumb {
 
 .tagline {
   text-align: center;
-  font-size: 28px;
+  font-size: var(--tagline-size);
   font-weight: 500;
   letter-spacing: -0.02em;
   margin: 0;
@@ -189,16 +212,16 @@ section.main::-webkit-scrollbar-thumb {
 
 .inputbox {
   position: relative;
-  width: min(760px, 100%);
-  padding: 18px 20px 14px;
+  width: min(var(--composer-width), 100%);
+  padding: var(--composer-pad);
   background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  border: var(--panel-border-width) solid var(--border);
+  border-radius: var(--radius-shell);
+  backdrop-filter: blur(var(--panel-blur));
+  -webkit-backdrop-filter: blur(var(--panel-blur));
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 20px 60px -20px rgba(0, 0, 0, 0.6),
+    var(--panel-shadow),
     0 0 0 1px rgba(255, 255, 255, 0.02);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -234,9 +257,9 @@ section.main::-webkit-scrollbar-thumb {
 .preview {
   position: relative;
   flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
+  width: var(--preview-size);
+  height: var(--preview-size);
+  border-radius: var(--radius-control);
   overflow: hidden;
   border: 1px solid var(--border-strong);
   background-color: rgba(0, 0, 0, 0.3);
@@ -293,7 +316,7 @@ section.main::-webkit-scrollbar-thumb {
   align-items: center;
   justify-content: center;
   background-color: rgba(14, 20, 16, 0.75);
-  border-radius: 24px;
+  border-radius: var(--radius-shell);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   pointer-events: none;
@@ -318,7 +341,7 @@ section.main::-webkit-scrollbar-thumb {
 
 textarea {
   width: 100%;
-  height: 140px;
+  height: var(--textarea-height);
   margin-bottom: 12px;
   padding: 4px 4px 0;
   background-color: transparent;
@@ -361,12 +384,13 @@ div.actions {
   width: 38px;
   height: 38px;
   padding: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   border: 1px solid transparent;
   background-color: transparent;
   color: rgba(245, 232, 232, 0.7);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  text-transform: var(--control-case);
 }
 
 .actions button:hover {
@@ -429,6 +453,7 @@ div.actions {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffffff80' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
   background-position: right 8px center;
+  text-transform: var(--control-case);
 }
 
 .op-picker-select:hover {
@@ -524,6 +549,7 @@ div.actions {
   outline: none;
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   min-width: 0;
+  text-transform: var(--control-case);
 }
 
 .param-input {
@@ -582,7 +608,7 @@ div.actions {
 /* ---------- History / batch cards ---------- */
 
 .history {
-  width: min(880px, 100%);
+  width: min(var(--history-width), 100%);
   margin: 0 auto;
 }
 
@@ -592,7 +618,7 @@ div.actions {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--history-gap);
 }
 
 .history-item {
@@ -601,8 +627,8 @@ div.actions {
 
 .batch-card {
   position: relative;
-  padding: 22px 22px 20px;
-  border-radius: 22px;
+  padding: var(--card-pad);
+  border-radius: var(--radius-card);
   background-color: var(--surface);
   border: 1px solid var(--border);
   backdrop-filter: blur(14px);
@@ -703,7 +729,7 @@ div.actions {
   align-items: center;
   gap: 12px;
   padding: 8px 14px;
-  width: min(760px, 100%);
+  width: min(var(--composer-width), 100%);
   font-size: 12px;
   color: var(--accent);
   background-color: var(--accent-ring);
@@ -749,14 +775,14 @@ div.actions {
 .results-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--result-min), 1fr));
   gap: 14px;
 }
 
 .result-card {
   position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: 18px;
+  aspect-ratio: var(--result-aspect);
+  border-radius: var(--radius-thumb);
   overflow: hidden;
   border: 1px solid var(--border);
   background-color: rgba(0, 0, 0, 0.3);
@@ -1266,12 +1292,37 @@ button.setup-chip.is-error:hover {
 }
 
 @media (max-width: 640px) {
-  .tagline {
-    font-size: 22px;
+  :root {
+    --composer-align: center;
+    --composer-justify: center;
+    --page-pad-x: 16px;
+    --page-pad-y: 24px;
+    --composer-width: 100%;
+    --history-width: 100%;
+    --textarea-height: 126px;
   }
 
-  section.main {
-    padding: 20px 16px;
+  .app-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: auto;
+    padding: 12px;
+    letter-spacing: 2px;
+  }
+
+  .brand-pill {
+    max-width: 100%;
+  }
+
+  .tagline {
+    font-size: 22px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .page {
+    align-items: center;
+    justify-content: center;
   }
 
   .results-grid {

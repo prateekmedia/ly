@@ -120,7 +120,9 @@ function extractScalePercent(text) {
 
 function extractDimension(text, kind) {
   // "800px wide", "width 800", "w=800", "800 wide"
-  const re = new RegExp(`${kind}\\s*[:=]?\\s*(\\d{2,5})|(\\d{2,5})\\s*(?:px)?\\s*${kind}`)
+  const re = new RegExp(
+    `(?:${kind})\\s*[:=]?\\s*(\\d{2,5})|(\\d{2,5})\\s*(?:px)?\\s*(?:${kind})`,
+  )
   const m = text.match(re)
   if (!m) return null
   const v = Number(m[1] || m[2])

@@ -62,10 +62,12 @@ export default function History({ batches, editingBatchId, historyRef, actions, 
                           const label = selectors.opLabelFor(item)
                           const displayUrl = selectors.displayUrl(item)
                           const displayName = selectors.displayName(item)
+                          const ariaLabel = label ? `${displayName}, ${label}` : displayName
                           return (
                             <div
                               key={item.id}
                               className={`result-card${isLoading ? ' is-loading' : ''}`}
+                              aria-label={ariaLabel}
                               onClick={() =>
                                 actions.setLightboxImg({
                                   itemId: item.id,
