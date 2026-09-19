@@ -11,20 +11,6 @@
   <a href="LICENSE.md"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/License-AGPL--3.0-a5d184?style=for-the-badge&labelColor=101510"/></a>
 </p>
 
-<table align="center">
-  <tr>
-    <th colspan="2"><h6>Get started</h6></th>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href="https://ly.sunal.in"><img alt="Use the app" src="https://img.shields.io/badge/Use_the_app-online-7fad62?style=flat-square&labelColor=101510"/></a>
-    </td>
-    <td align="center">
-      <a href="#installing-manually"><img alt="Run from source" src="https://img.shields.io/badge/Run_from_source-locally-a5d184?style=flat-square&labelColor=101510"/></a>
-    </td>
-  </tr>
-</table>
-
 Images never leave your device. In **auto** mode, a small on-device model downloads once (~580 MB, then cached) to interpret your prompt.
 
 #### Features
@@ -41,7 +27,7 @@ Use a recent **Chrome** or **Edge** for the best experience.
 
 If something breaks, **[open an issue](https://github.com/prateekmedia/ly/issues)**.
 
-<h2 align="center">Installing manually</h2>
+<h2 align="center">Run locally</h2>
 
 ```bash
 git clone https://github.com/prateekmedia/ly.git
