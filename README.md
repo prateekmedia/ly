@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="https://ly.sunal.in"><img alt="Open ly.sunal.in" src="https://img.shields.io/badge/Open-ly.sunal.in-a5d184?style=for-the-badge&labelColor=101510"/></a>
+  <a href="LICENSE.md"><img alt="License: AGPL-3.0" src="https://img.shields.io/badge/License-AGPL--3.0-a5d184?style=for-the-badge&labelColor=101510"/></a>
 </p>
 
 <table align="center">
