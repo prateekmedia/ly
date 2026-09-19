@@ -4,7 +4,7 @@
 
 <h1 align="center">ly</h1>
 
-<p align="center"><b>Manipulate images via chat. Uses a Laya-like model to classify your prompt.</b></p>
+<p align="center"><b>Manipulate images via chat. Uses a Jev-like model to classify your prompt.</b></p>
 
 <p align="center">
   <a href="https://ly.sunal.in"><img alt="Open ly.sunal.in" src="https://img.shields.io/badge/Open-ly.sunal.in-a5d184?style=for-the-badge&labelColor=101510"/></a>
