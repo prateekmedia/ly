@@ -26,7 +26,7 @@ import { useBatchProcessor } from '@/hooks/useBatchProcessor.js'
 
 const MAX_STAGED = 50
 
-export function useImageWorkbench() {
+export function useImageWorkbench({ mainRef } = {}) {
   const dispatch = useDispatch()
   const state = useSelector((state) => state.app)
   const {
@@ -47,12 +47,27 @@ export function useImageWorkbench() {
   const { buildItems, enqueueBatch, patchBatch } = useBatchProcessor({ assets, dispatch })
 
   const scrollHistoryIntoView = useCallback(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        historyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
-    })
-  }, [])
+    const run = (attemptsLeft) => {
+      const root = historyRef.current
+      const newest =
+        root?.querySelector('.history-item') ||
+        root?.querySelector('.batch-card') ||
+        root
+      if (newest) {
+        newest.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        return
+      }
+      if (attemptsLeft > 0) {
+        requestAnimationFrame(() => run(attemptsLeft - 1))
+        return
+      }
+      const main = mainRef?.current
+      if (main) {
+        main.scrollTo({ top: main.scrollHeight, behavior: 'smooth' })
+      }
+    }
+    requestAnimationFrame(() => run(48))
+  }, [mainRef])
 
   useEffect(() => {
     const id = setInterval(() => {

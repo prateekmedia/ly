@@ -1,15 +1,16 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useRef } from 'react'
 import './App.css'
 import Composer from '@/components/Composer.jsx'
+import History from '@/components/History.jsx'
 import SuspenseLoader from '@/components/SuspenseLoader.jsx'
 import { TAGLINES } from '@/constants/taglines.js'
 import { useImageWorkbench } from '@/hooks/useImageWorkbench.js'
 
-const History = lazy(() => import('@/components/History.jsx'))
 const Lightbox = lazy(() => import('@/components/Lightbox.jsx'))
 const ModelLoader = lazy(() => import('@/components/ModelLoader.jsx'))
 
 function App() {
+  const mainRef = useRef(null)
   const {
     state,
     currentManualOp,
@@ -18,7 +19,7 @@ function App() {
     refs,
     actions,
     selectors,
-  } = useImageWorkbench()
+  } = useImageWorkbench({ mainRef })
   const { fileInputRef, composerRef, historyRef } = refs
   const { batches, lightboxImg } = state
 
@@ -27,7 +28,7 @@ function App() {
       <header className='app-header'>
         <span className='brand-pill'>ly.sunal.in</span>
       </header>
-      <section className='main'>
+      <section className='main' ref={mainRef}>
         <Composer
           state={state}
           composerRef={composerRef}
@@ -47,17 +48,13 @@ function App() {
           }
         />
         {batches.length > 0 && (
-          <Suspense fallback={null}>
-            <SuspenseLoader>
-              <History
-                batches={batches}
-                editingBatchId={state.editingBatchId}
-                historyRef={historyRef}
-                actions={actions}
-                selectors={selectors}
-              />
-            </SuspenseLoader>
-          </Suspense>
+          <History
+            batches={batches}
+            editingBatchId={state.editingBatchId}
+            historyRef={historyRef}
+            actions={actions}
+            selectors={selectors}
+          />
         )}
       </section>
       {lightboxImg && (
