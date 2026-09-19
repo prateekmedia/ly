@@ -115,8 +115,6 @@ export default {
   id: 'resize_image',
   label: 'Resize',
   description: 'Resize, scale, crop, or letterbox an image.',
-  llmDescription:
-    'Resize an image. Use when the user asks to resize, scale, downscale, change dimensions, fit to a size, crop to a size, or set width/height. If the user gives a percentage like "25%" or "half", use the "scale" param. If they give pixel dimensions, use width and/or height. fit=stretch ignores aspect ratio (default when both width and height differ from source aspect). fit=crop crops the overflow when the user asks to crop. fit=contain letterboxes with transparency.',
   accepts: '*',
   params: [
     {

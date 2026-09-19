@@ -1,16 +1,14 @@
-// Operation registry. Metadata is kept eagerly available for UI controls and
-// LLM prompts, while operation implementations are loaded only when run.
+// Operation registry. Metadata for UI controls; implementations load on demand.
 //
 // Operation shape:
 //   {
-//     id:             string                          // stable id used by the LLM
-//     label:          string                          // user-facing short label
-//     description:    string                          // user-facing description
-//     llmDescription: string                          // shown to the LLM in the prompt
-//     accepts:        string[] | '*'                  // mime types this op handles
-//     params:         ParamSpec[]                     // schema the LLM can fill in
-//     defaultParams:  () => object                    // safe defaults
-//     normalizeParams:(raw) => object                 // clamp/validate user/LLM input
+//     id:             string
+//     label:          string
+//     description:    string
+//     accepts:        string[] | '*'
+//     params:         ParamSpec[]
+//     defaultParams:  () => object
+//     normalizeParams:(raw) => object
 //     outputMime:     (file, params) => string
 //     outputExt:      (file, params) => string
 //     formatLabel:    (params) => string              // text shown on the result badge
@@ -82,8 +80,6 @@ export const OPERATIONS = [
     id: 'convert_format',
     label: 'Convert',
     description: 'Convert an image from one format to another.',
-    llmDescription:
-      'Convert an image to a different format (png, jpeg, webp, avif). Use whenever the user asks to convert format, change extension, save as, or export as a specific format.',
     accepts: '*',
     params: [
       {
@@ -116,8 +112,6 @@ export const OPERATIONS = [
     id: 'compress_image',
     label: 'Compress',
     description: 'Reduce image file size while preserving its format.',
-    llmDescription:
-      'Compress an image to reduce file size. Use when the user asks to compress, shrink (file size, not pixels), optimize, or make file smaller. Preserves the original format by default (PNG stays PNG, JPEG stays JPEG, etc.). Optionally caps the longest dimension. The user can override format if they want to convert during compression.',
     accepts: '*',
     params: [
       {
@@ -157,8 +151,6 @@ export const OPERATIONS = [
     id: 'resize_image',
     label: 'Resize',
     description: 'Resize, scale, crop, or letterbox an image.',
-    llmDescription:
-      'Resize an image. Use when the user asks to resize, scale, downscale, change dimensions, fit to a size, crop to a size, or set width/height. If the user gives a percentage like "25%" or "half", use the "scale" param. If they give pixel dimensions, use width and/or height. fit=stretch ignores aspect ratio (default when both width and height differ from source aspect). fit=crop crops the overflow when the user asks to crop. fit=contain letterboxes with transparency.',
     accepts: '*',
     params: [
       {
@@ -226,8 +218,6 @@ export const OPERATIONS = [
     id: 'remove_background',
     label: 'Remove BG',
     description: 'Remove the background, leaving the subject on transparency.',
-    llmDescription:
-      'Remove the background from an image. Use when the user asks to remove background, cut out subject, make background transparent, isolate the subject, or knock out the background. Output is always PNG with transparency.',
     accepts: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
     params: [],
     defaultParams: () => ({}),
@@ -257,16 +247,6 @@ export function getOperation(id) {
 
 export function listOperationIds() {
   return OPERATIONS.map((o) => o.id)
-}
-
-// Build a description block for the LLM listing every op + its params.
-export function operationsForPrompt() {
-  return [
-    'convert_format: convert/save/export. p={format:png|jpeg|webp|avif,quality:1-100}',
-    'compress_image: reduce file size. p={quality:1-100,max_dimension:px,format:png|jpeg|webp|avif}',
-    'resize_image: resize/scale/crop. p={scale:number,width:px,height:px,fit:stretch|crop|contain,format:png|jpeg|webp|avif}',
-    'remove_background: remove/cut out bg. p={}',
-  ].join('\n')
 }
 
 // Replace the file extension on a filename

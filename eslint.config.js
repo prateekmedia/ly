@@ -5,7 +5,11 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'public/mediapipe-wasm']),
+  globalIgnores(['dist', '.venv', 'public/mediapipe-wasm', 'public/ort-wasm', 'public/coi-serviceworker.js']),
+  {
+    files: ['vite.config.js', 'scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
   {
     files: ['**/*.{js,jsx}'],
     extends: [

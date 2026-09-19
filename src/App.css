@@ -946,71 +946,20 @@ div.actions {
   height: 16px;
 }
 
-/* ---------- Setup card ---------- */
+/* ---------- Setup toast (model download) ---------- */
 
-.setup-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  width: min(560px, 100%);
-  font-size: 13px;
-  color: var(--text);
-  background-color: var(--surface);
-  border: 1px solid var(--accent-edge);
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
+.suspense-root {
+  animation: suspense-fade-in 200ms ease both;
 }
 
-.setup-card span {
-  flex: 1 1 auto;
-  min-width: 0;
+@keyframes suspense-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-
-.setup-card button {
-  flex-shrink: 0;
-  padding: 7px 14px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  color: var(--bg);
-  background: var(--accent);
-}
-
-.setup-card button:hover {
-  background: var(--accent-bright);
-}
-
-.setup-card-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.setup-card-bar-fill {
-  height: 100%;
-  background-color: var(--accent);
-  transition: width 200ms ease;
-}
-
-.setup-card.is-error {
-  border-color: rgba(255, 138, 138, 0.4);
-  color: #ffb4b4;
-}
-
-.setup-card.is-error button {
-  background: #ff8a8a;
-  color: #1a0808;
-}
-
-/* ---------- Setup toast (loading state) ---------- */
 
 .setup-toast {
   position: fixed;
@@ -1089,94 +1038,6 @@ div.actions {
     right: 16px;
     width: auto;
   }
-}
-
-/* ---------- Setup chip (compact, used for ready state) ---------- */
-
-.setup-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: var(--text-muted);
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
-}
-
-button.setup-chip:hover {
-  color: var(--text-strong);
-  background-color: var(--surface-strong);
-  border-color: var(--accent-edge);
-}
-
-button.setup-chip:active {
-  transform: scale(0.97);
-}
-
-.setup-chip-icon {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
-.setup-chip-icon.spin {
-  animation: setup-spin 1s linear infinite;
-}
-
-@keyframes setup-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.setup-chip.is-loading {
-  cursor: default;
-  color: var(--text-strong);
-  border-color: var(--accent-edge);
-  padding-right: 18px;
-  position: relative;
-  overflow: hidden;
-}
-
-.setup-chip-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.setup-chip-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-strong) 100%);
-  transition: width 200ms ease;
-}
-
-.setup-chip.is-ready {
-  cursor: default;
-  color: var(--accent);
-  border-color: var(--accent-edge);
-  background-color: var(--accent-ring);
-}
-
-.setup-chip.is-error {
-  color: #ffb4b4;
-  border-color: rgba(255, 138, 138, 0.4);
-  background-color: rgba(255, 138, 138, 0.08);
-}
-
-button.setup-chip.is-error:hover {
-  background-color: rgba(255, 138, 138, 0.15);
 }
 
 /* ---------- Result card badges ---------- */

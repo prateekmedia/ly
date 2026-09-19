@@ -101,8 +101,6 @@ export default {
   id: 'compress_image',
   label: 'Compress',
   description: 'Reduce image file size while preserving its format.',
-  llmDescription:
-    'Compress an image to reduce file size. Use when the user asks to compress, shrink (file size, not pixels), optimize, or make file smaller. Preserves the original format by default (PNG stays PNG, JPEG stays JPEG, etc.). Optionally caps the longest dimension. The user can override format if they want to convert during compression.',
   accepts: '*',
   params: [
     {

@@ -1,14 +1,15 @@
 import { useRef } from 'react'
 import { useDispatch } from 'react-redux'
-import { planOperations } from '../llm/intentParser.js'
-import { getStatus, waitForReady, disposeModel } from '../llm/llmClient.js'
-import { runOperation, getOperation, NOOP } from '../operations/index.js'
+import { getPlanner } from '@/config/planner.js'
+import { planOperations } from '@/llm/intentParser.js'
+import { getPlannerRuntime } from '@/llm/plannerRuntime.js'
+import { runOperation, getOperation, NOOP } from '@/operations/index.js'
 import {
   OP_MODE_AUTO,
   applyOperationPlan,
   patchBatch as patchBatchState,
   patchItem as patchItemState,
-} from '../store/appSlice.js'
+} from '@/store/appSlice.js'
 
 export function useBatchProcessor({ assets, dispatch: dispatchFromProps }) {
   const reduxDispatch = useDispatch()
@@ -59,13 +60,19 @@ export function useBatchProcessor({ assets, dispatch: dispatchFromProps }) {
       mark(`manual op: ${batch.forcedOpId}`)
     } else {
       let useLLM = false
-      try {
-        await waitForReady()
-        useLLM = getStatus() === 'ready'
-        mark('llm ready')
-      } catch {
-        useLLM = false
-        mark('llm setup failed')
+      const runtime = getPlannerRuntime()
+      if (runtime) {
+        try {
+          await runtime.waitForReady()
+          useLLM = runtime.getStatus() === 'ready'
+          mark(`${getPlanner()} ready`)
+        } catch {
+          useLLM = false
+          runtime.disposeModel()
+          mark(`${getPlanner()} setup failed — heuristics; will retry next batch`)
+        }
+      } else {
+        mark(`planner: ${getPlanner()}`)
       }
 
       ops = await planOperations({
@@ -78,9 +85,9 @@ export function useBatchProcessor({ assets, dispatch: dispatchFromProps }) {
       })
       mark('plan done')
 
-      if (useLLM) {
-        disposeModel()
-        mark('llm disposed')
+      if (useLLM && runtime) {
+        runtime.disposeModel()
+        mark(`${getPlanner()} disposed`)
       }
     }
 

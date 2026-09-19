@@ -8,9 +8,11 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.venv
 dist
 dist-ssr
 public/mediapipe-wasm/
+public/ort-wasm/
 *.local
 
 # Editor directories and files

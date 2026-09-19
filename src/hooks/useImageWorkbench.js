@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import compact from 'lodash/compact'
-import { TAGLINES } from '../constants/taglines.js'
-import { getOperation, NOOP } from '../operations/index.js'
-import { subscribe } from '../llm/llmClient.js'
+import { TAGLINES } from '@/constants/taglines.js'
+import { getOperation, NOOP } from '@/operations/index.js'
 import {
   OP_MODE_AUTO,
   advanceTagline,
@@ -19,11 +18,11 @@ import {
   setOpMode,
   setText,
   startEditingBatch,
-} from '../store/appSlice.js'
-import { store } from '../store/store.js'
-import { fileMetadata, newBatchId, newStagedId } from '../utils/imageMetadata.js'
-import { useAssetRegistry } from './useAssetRegistry.js'
-import { useBatchProcessor } from './useBatchProcessor.js'
+} from '@/store/appSlice.js'
+import { store } from '@/store/store.js'
+import { fileMetadata, newBatchId, newStagedId } from '@/utils/imageMetadata.js'
+import { useAssetRegistry } from '@/hooks/useAssetRegistry.js'
+import { useBatchProcessor } from '@/hooks/useBatchProcessor.js'
 
 const MAX_STAGED = 50
 
@@ -39,13 +38,10 @@ export function useImageWorkbench() {
     opMode,
     manualParams,
   } = state
-  const [, forceRerender] = useState(0)
-
   const fileInputRef = useRef(null)
   const dragCounter = useRef(0)
   const composerRef = useRef(null)
   const historyRef = useRef(null)
-  const prevBatchCount = useRef(0)
   const downloadingRef = useRef(false)
   const assets = useAssetRegistry()
   const { buildItems, enqueueBatch, patchBatch } = useBatchProcessor({ assets, dispatch })
@@ -56,11 +52,6 @@ export function useImageWorkbench() {
         historyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       })
     })
-  }, [])
-
-  useEffect(() => {
-    const unsubscribe = subscribe(() => forceRerender((n) => n + 1))
-    return unsubscribe
   }, [])
 
   useEffect(() => {
@@ -129,13 +120,6 @@ export function useImageWorkbench() {
     return () => window.removeEventListener('beforeunload', handler)
   }, [batches])
 
-  useEffect(() => {
-    if (batches.length > prevBatchCount.current && historyRef.current) {
-      scrollHistoryIntoView()
-    }
-    prevBatchCount.current = batches.length
-  }, [batches.length, scrollHistoryIntoView])
-
   const currentManualOp = opMode === OP_MODE_AUTO ? null : getOperation(opMode)
   const currentManualParams = (() => {
     if (!currentManualOp) return {}
@@ -184,6 +168,7 @@ export function useImageWorkbench() {
     }
     dispatch(appendBatch(newBatch))
     dispatch(clearComposerAfterSubmit())
+    scrollHistoryIntoView()
 
     enqueueBatch(newBatch).catch((err) => {
       patchBatch(newBatch.id, { status: 'done' })

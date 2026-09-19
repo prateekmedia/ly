@@ -5,16 +5,18 @@
   "type": "module",
   "scripts": {
     "sync:mediapipe-wasm": "node scripts/sync-mediapipe-wasm.mjs",
-    "postinstall": "npm run sync:mediapipe-wasm",
-    "predev": "npm run sync:mediapipe-wasm",
+    "sync:ort-wasm": "node scripts/sync-ort-wasm.mjs",
+    "postinstall": "npm run sync:mediapipe-wasm && npm run sync:ort-wasm",
+    "predev": "npm run sync:mediapipe-wasm && npm run sync:ort-wasm",
     "dev": "vite",
-    "prebuild": "npm run sync:mediapipe-wasm",
+    "prebuild": "npm run sync:mediapipe-wasm && npm run sync:ort-wasm",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@huggingface/transformers": "^4.0.1",
+    "@huggingface/tokenizers": "^0.2.0",
+    "onnxruntime-web": "^1.24.0",
     "@mediapipe/tasks-vision": "^0.10.34",
     "@reduxjs/toolkit": "^2.11.2",
     "lodash": "^4.18.1",

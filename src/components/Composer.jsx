@@ -1,8 +1,8 @@
 import { Image, Send, X } from 'lucide-react'
 import styled from 'styled-components'
-import { OPERATIONS } from '../operations/index.js'
-import { OP_MODE_AUTO } from '../store/appSlice.js'
-import ParamControl from './ParamControl.jsx'
+import ParamControl from '@/components/ParamControl.jsx'
+import { OPERATIONS } from '@/operations/index.js'
+import { OP_MODE_AUTO } from '@/store/appSlice.js'
 
 const StyledWrapper = styled.div.attrs({
   className: 'page composer-page',

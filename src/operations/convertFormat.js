@@ -38,8 +38,6 @@ export default {
   id: 'convert_format',
   label: 'Convert',
   description: 'Convert an image from one format to another.',
-  llmDescription:
-    'Convert an image to a different format (png, jpeg, webp, avif). Use whenever the user asks to convert format, change extension, save as, or export as a specific format.',
   accepts: '*',
   params: [
     {

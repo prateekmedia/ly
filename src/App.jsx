@@ -1,10 +1,13 @@
+import { lazy, Suspense } from 'react'
 import './App.css'
-import Composer from './components/Composer.jsx'
-import History from './components/History.jsx'
-import Lightbox from './components/Lightbox.jsx'
-import ModelLoader from './components/ModelLoader.jsx'
-import { TAGLINES } from './constants/taglines.js'
-import { useImageWorkbench } from './hooks/useImageWorkbench.js'
+import Composer from '@/components/Composer.jsx'
+import SuspenseLoader from '@/components/SuspenseLoader.jsx'
+import { TAGLINES } from '@/constants/taglines.js'
+import { useImageWorkbench } from '@/hooks/useImageWorkbench.js'
+
+const History = lazy(() => import('@/components/History.jsx'))
+const Lightbox = lazy(() => import('@/components/Lightbox.jsx'))
+const ModelLoader = lazy(() => import('@/components/ModelLoader.jsx'))
 
 function App() {
   const {
@@ -17,6 +20,7 @@ function App() {
     selectors,
   } = useImageWorkbench()
   const { fileInputRef, composerRef, historyRef } = refs
+  const { batches, lightboxImg } = state
 
   return (
     <>
@@ -34,21 +38,39 @@ function App() {
           currentManualParams={currentManualParams}
           canSend={canSend}
           tagline={TAGLINES[state.taglineIndex]}
-          modelLoader={<ModelLoader />}
+          modelLoader={
+            <Suspense fallback={null}>
+              <SuspenseLoader>
+                <ModelLoader />
+              </SuspenseLoader>
+            </Suspense>
+          }
         />
-        <History
-          batches={state.batches}
-          editingBatchId={state.editingBatchId}
-          historyRef={historyRef}
-          actions={actions}
-          selectors={selectors}
-        />
+        {batches.length > 0 && (
+          <Suspense fallback={null}>
+            <SuspenseLoader>
+              <History
+                batches={batches}
+                editingBatchId={state.editingBatchId}
+                historyRef={historyRef}
+                actions={actions}
+                selectors={selectors}
+              />
+            </SuspenseLoader>
+          </Suspense>
+        )}
       </section>
-      <Lightbox
-        lightboxImg={state.lightboxImg}
-        selectors={selectors}
-        actions={actions}
-      />
+      {lightboxImg && (
+        <Suspense fallback={null}>
+          <SuspenseLoader>
+            <Lightbox
+              lightboxImg={lightboxImg}
+              selectors={selectors}
+              actions={actions}
+            />
+          </SuspenseLoader>
+        </Suspense>
+      )}
     </>
   )
 }

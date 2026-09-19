@@ -13,9 +13,10 @@
 
 import { ImageSegmenter, FilesetResolver } from '@mediapipe/tasks-vision'
 import { assertCanvasSize } from './index.js'
+import { assetUrl } from '@/utils/assetBase.js'
 
 // Local copy of the MediaPipe WASM files. See public/mediapipe-wasm/.
-const WASM_BASE = `${window.location.origin}/mediapipe-wasm`
+const WASM_BASE = assetUrl('mediapipe-wasm')
 const MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite'
 
@@ -92,8 +93,6 @@ export default {
   id: 'remove_background',
   label: 'Remove BG',
   description: 'Remove the background, leaving the subject on transparency.',
-  llmDescription:
-    'Remove the background from an image. Use when the user asks to remove background, cut out subject, make background transparent, isolate the subject, or knock out the background. Output is always PNG with transparency.',
   accepts: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
   params: [],
   defaultParams: () => ({}),
